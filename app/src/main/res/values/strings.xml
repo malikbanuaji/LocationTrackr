@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LocationTrackingK</string>
+    <string name="message_text">Input a message</string>
+    <string name="send_notification">Display Notification</string>
+</resources>
