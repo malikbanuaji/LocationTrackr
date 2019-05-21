@@ -7,7 +7,7 @@ import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.google.android.gms.location.*
 
-class MyServices: Service {
+class MyServices: Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationRequest = LocationRequest.create()
     private var locationCallback = LocationCallback()
