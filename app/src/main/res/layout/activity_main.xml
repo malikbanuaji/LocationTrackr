@@ -19,4 +19,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" tools:layout_editor_absoluteY="30dp"
             android:id="@+id/button" tools:layout_editor_absoluteX="16dp" tools:text="@string/send_notification"/>
+    <Button
+            android:text="START SERVICES"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/button2" android:onClick="startServicesGeo"/>
+    <Button
+            android:text="STOP SERVICES"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/button3" android:onClick="stopServicesGeo"/>
 </LinearLayout>

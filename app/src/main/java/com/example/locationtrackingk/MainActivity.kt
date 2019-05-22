@@ -47,40 +47,17 @@ class MainActivity : AppCompatActivity() {
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         createLocationRequest()
+
+
+    }
+
+    fun startServicesGeo(v : View){
         mGetLocation()
-
     }
 
-    private fun startServicesGeo(v : View){
-        val serviceIntent = Intent(this, MyServices::class.java).apply {
-            putExtra(MY_MESSAGE, "Location")
-        }
-        startService(serviceIntent)
-    }
-
-    private fun stopServicesGeo(v: View){
+    fun stopServicesGeo(v: View){
         val serviceIntent = Intent(this, MyServices::class.java)
         stopService(serviceIntent)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (requestingLocationUpdates) {
-            startLocationUpdates()
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopLocationUpdates()
-    }
-
-    private fun stopLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-    }
-
-    private fun startLocationUpdates(){
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
     private fun mGetLocation(){
@@ -102,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
+                    createLocationSettingsRequest()
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
@@ -130,7 +108,8 @@ class MainActivity : AppCompatActivity() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener{ locationSettingsResponse ->
-            requestingLocationUpdates = true
+            val serviceIntent = Intent(this, MyServices::class.java)
+            startService(serviceIntent)
         }
 
         task.addOnFailureListener { exception ->
@@ -145,12 +124,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getLocation(){
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener {location : Location? ->
-               displayNotification("latitude" + location?.latitude.toString() + "\nlongitude" + location?.longitude)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CHECK_SETTINGS){
+            if (resultCode == PackageManager.PERMISSION_GRANTED){
+                createLocationSettingsRequest()
             }
+        }
     }
+
+//    private fun getLocation(){
+//        fusedLocationClient.lastLocation
+//            .addOnSuccessListener {location : Location? ->
+//               displayNotification("latitude" + location?.latitude.toString() + "\nlongitude" + location?.longitude)
+//            }
+//    }
 
     private fun displayNotification(message: String){
         val intent = Intent(this, MainActivity::class.java).apply {
