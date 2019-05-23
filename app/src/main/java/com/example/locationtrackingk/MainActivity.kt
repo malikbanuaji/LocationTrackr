@@ -3,20 +3,20 @@ package com.example.locationtrackingk
 import android.Manifest
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
-import android.content.IntentSender
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.Location
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -32,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private var locationRequest = LocationRequest.create()
     private var requestingLocationUpdates = true
     private var locationCallback = LocationCallback()
+    private var mBound : Boolean = false
+    private lateinit var myServices: MyServices
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +49,36 @@ class MainActivity : AppCompatActivity() {
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         createLocationRequest()
+    }
 
+    private val connection = object: ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MyServices.LocalBinder
+            Log.d("BINDER", "$name")
+            myServices = binder.getService()
+            mBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.d("BINDER", "$name")
+            mBound = false
+        }
+    }
+
+    fun getValFromServices(v: View){
+        val longitudeView : TextView = findViewById(R.id.longitudeValue)
+        val latitudeView : TextView = findViewById(R.id.latitudeValue)
+        try {
+            if (mBound){
+                val location: Location? = myServices.myLocation
+
+                latitudeView.text = location?.latitude.toString()
+                longitudeView.text = location?.longitude.toString()
+
+            }
+        } catch (e: UninitializedPropertyAccessException ){
+            Toast.makeText(this, "Please Wait ..", Toast.LENGTH_LONG).show()
+        }
 
     }
 
@@ -55,7 +86,32 @@ class MainActivity : AppCompatActivity() {
         mGetLocation()
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("onResume", "RESUME")
+        Intent(this, MyServices::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_IMPORTANT)
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("onRestart","RESTART")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("onPause", "PAUSE")
+        if (mBound){
+            unbindService(connection)
+        }
+    }
+
+
     fun stopServicesGeo(v: View){
+        if (mBound){
+            unbindService(connection)
+        }
         val serviceIntent = Intent(this, MyServices::class.java)
         stopService(serviceIntent)
     }
@@ -68,8 +124,12 @@ class MainActivity : AppCompatActivity() {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION)
         } else {
-            createLocationSettingsRequest()
+            createAndBind()
         }
+    }
+
+    private fun createAndBind (){
+        createLocationSettingsRequest()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -110,6 +170,9 @@ class MainActivity : AppCompatActivity() {
         task.addOnSuccessListener{ locationSettingsResponse ->
             val serviceIntent = Intent(this, MyServices::class.java)
             startService(serviceIntent)
+            Intent(this, MyServices::class.java).also { intent ->
+                bindService(intent, connection, Context.BIND_IMPORTANT)
+            }
         }
 
         task.addOnFailureListener { exception ->

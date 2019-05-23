@@ -6,7 +6,9 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.location.LocationManager
+import android.os.Binder
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.util.Log
@@ -17,8 +19,14 @@ class MyServices: Service() {
     private var locationRequest = LocationRequest.create()
     private var locationCallback = LocationCallback()
     private lateinit var notificationManager: NotificationManager
+    private lateinit var plocation: Location
+    private val binder = LocalBinder()
     private var latitude: String = ""
     private var longitude: String = ""
+
+    inner class LocalBinder : Binder(){
+        fun getService() : MyServices = this@MyServices
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -27,6 +35,7 @@ class MyServices: Service() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult?: return
                 for (location in locationResult.locations){
+                    plocation = location
                     Log.d(TAG, "latitude" + location?.latitude.toString() + "\nlongitude" + location?.longitude.toString())
                     notificationManager.notify(2, notification(location.latitude.toString(), location.longitude.toString()))
                 }
@@ -36,8 +45,11 @@ class MyServices: Service() {
         createLocationRequest()
     }
     override fun onBind(intent: Intent?): IBinder? {
-        return null
+        return binder
     }
+
+    val myLocation: Location
+        get() = plocation
 
     private fun notification(latitude: String?, longitude: String?): Notification {
         val intent = Intent(this, MainActivity::class.java)

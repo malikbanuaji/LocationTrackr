@@ -7,6 +7,40 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         tools:context=".MainActivity" android:gravity="center">
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:gravity="clip_horizontal|center"
+            android:layout_margin="16dp"
+            android:id="@+id/child" android:padding="16dp" android:baselineAligned="false"
+            android:layoutDirection="ltr" android:layoutMode="clipBounds">
+        <TextView
+                android:text="Longitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/longitudeLabel"/>
+        <TextView
+                android:text="@string/location_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/longitudeValue" android:typeface="normal"
+                android:fontFamily="monospace" android:lineSpacingExtra="8sp" android:textAlignment="center"
+                android:textSize="18sp" android:layout_margin="16dp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:gravity="clip_horizontal|center"
+            android:layout_margin="16dp" android:padding="16dp">
+        <TextView
+                android:text="Latitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/latitudeLabel"/>
+        <TextView
+                android:text="@string/location_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/latitudeValue" android:typeface="normal"
+                android:fontFamily="monospace" android:lineSpacingExtra="8sp" android:textAlignment="center"
+                android:textSize="18sp" android:layout_margin="16dp"/>
+    </LinearLayout>
     <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,4 +61,8 @@
             android:text="STOP SERVICES"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/button3" android:onClick="stopServicesGeo"/>
+    <Button
+            android:text="Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/button4" android:onClick="getValFromServices"/>
 </LinearLayout>
