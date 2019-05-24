@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import com.google.android.gms.location.*
+import com.google.firebase.database.FirebaseDatabase
 
 class MyServices: Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -23,6 +24,8 @@ class MyServices: Service() {
     private val binder = LocalBinder()
     private var latitude: String = ""
     private var longitude: String = ""
+    private val listLocation: MutableList<Location> = mutableListOf()
+    private val uListLocation: List<Location> = listLocation
 
     inner class LocalBinder : Binder(){
         fun getService() : MyServices = this@MyServices
@@ -36,7 +39,8 @@ class MyServices: Service() {
                 locationResult?: return
                 for (location in locationResult.locations){
                     plocation = location
-                    Log.d(TAG, "latitude" + location?.latitude.toString() + "\nlongitude" + location?.longitude.toString())
+                    listLocation.add(location)
+                    Log.d(TAG, "latitude" + location?.latitude.toString() + "\nlongitude" + location?.longitude.toString() + myListLocation)
                     notificationManager.notify(2, notification(location.latitude.toString(), location.longitude.toString()))
                 }
             }
@@ -47,6 +51,9 @@ class MyServices: Service() {
     override fun onBind(intent: Intent?): IBinder? {
         return binder
     }
+
+    val myListLocation: Int
+        get() = uListLocation.size
 
     val myLocation: Location
         get() = plocation
@@ -64,7 +71,7 @@ class MyServices: Service() {
     }
 
     val thisLocation: String
-        get() = "Latitude $latitude \n Longitude $longitude"
+        get() = "Latitude $latitude \n Longitude $longitude "
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startLocationUpdates()
@@ -75,7 +82,10 @@ class MyServices: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "Saving State")
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("location")
+        myRef.setValue(uListLocation)
+        Log.d(TAG, "Saving State $myListLocation")
         stopLocationUpdates()
     }
 
